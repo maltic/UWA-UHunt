@@ -27,7 +27,7 @@
       <div class="panel-heading">Standings Table</div>
       <div class="panel-body">
         <h3>Instructions</h3>
-        <p>This is the internal leaderboard for UWA. It should make UHunt problem solving more competitive, and more fun! 
+        <p>This is the internal leaderboard for UWA. It should make UHunt problem solving more competitive, and more fun!
           If you want to see your name up here you need to post a request on the ICPC forum, and we will add you right away.
           This is more for fun than for competition, so try not to take it too seriously. The scores are updated automatically every hour, so be patient when beating all your friends.</p>
 
@@ -39,9 +39,9 @@
       </div>
 
       <!-- Table -->
-      <table class="table table-striped table-hover ">
+      <table id="results_table" class="table table-striped table-hover tablesorter ">
         <thead>
-          <th>Rank</th><th>Competitor</th><th> Solutions</th><th>Last Solution</th>
+          <tr><th>Competitor</th><th>Solved This Week</th><th>Solved All Time</th><th>Last Solution</th></tr>
         </thead>
         <tbody>
           <?php
@@ -51,11 +51,11 @@
 
 
             // get dem ppls. Ordered by number of solutions, tie breaker is age of last solution. Newbies should be below oldies.
-            $peoples = $db->query("SELECT u.*, COUNT(s.problemid) as count, MAX(s.datesolved) as lastacc FROM solutions s, users u 
-              WHERE u.uhuntid = s.uhuntid GROUP BY u.uhuntid ORDER BY count DESC, lastacc ASC, u.uhuntid");
+            $peoples = $db->query("SELECT u.*, COUNT(s.problemid) as count, MAX(s.datesolved) as lastacc,
+                COUNT(CASE WHEN s.datesolved >= date_sub(NOW(), INTERVAL 1 WEEK) THEN s.problemid END) as weekly_count
+                FROM solutions s, users u WHERE u.uhuntid = s.uhuntid GROUP BY u.uhuntid");
 
             // my awesome padding and ranking hacks
-            $rank = 1;
             $pad = 2.5;
             while($person = $peoples->fetch_object()) {
 
@@ -69,10 +69,8 @@
               $pt = "style='padding-top:$pt; padding-bottom:$pt'";
 
 
-              echo "<tr><td $pt >$rank</td><td $pt>$person->name</td><td $pt>$person->count</td>
-                <td $pt>$person->lastacc</td></tr>";
-
-              $rank += 1;
+              echo "<tr><td $pt>$person->name</td><td $pt>$person->weekly_count</td><td $pt>$person->count</td>
+                <td $pt><abbr class=\"timeago\" title=\"$person->lastacc\">$person->lastacc</abbr></td></tr>";
             }
           ?>
         </tbody>
@@ -83,5 +81,14 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.13.3/jquery.tablesorter.min.js
+"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-timeago/1.3.1/jquery.timeago.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $("#results_table").tablesorter( {sortList: [[1, 1], [2, 1], [3, 1], [0, 0]]} );
+        $("abbr.timeago").timeago();
+      });
+    </script>
   </body>
 </html>
