@@ -26,7 +26,30 @@
       <ul class="nav nav-tabs">
         <li class="active"><a href="#standings" data-toggle="tab">Standings Table</a></li>
         <li><a href="#instructions" data-toggle="tab">Instructions</a></li>
+        <li><a href="#adduser" data-toggle="tab">Add User</a></li>
       </ul>
+
+      <?php
+          require_once "database.php";
+          $db = getDBLink();
+
+          if(isset($_POST["submit"])) {
+            if ($_POST["password"] != "dictionaryattackproof") {
+              echo "<div class='alert alert-danger'>Incorrect password</div>";
+            }
+            else {  
+              $uhuntid = intval(file_get_contents("http://uhunt.felix-halim.net/api/uname2uid/".$_POST["username"]));
+              $uname = $db->real_escape_string($_POST["username"]);
+              $fullname = $db->real_escape_string($_POST["fullname"]);
+              if($uhuntid == 0 || $db->query("INSERT INTO users VALUES ('$uhuntid', '$fullname', '$uname')"))
+                echo "<div class='alert alert-success'> $fullname has been successfully added to the database</div>";
+              else
+                echo "<div class='alert alert-danger'>Could not add $fullname to the database!</div>";
+            }
+
+          }
+      ?>
+
       <div class="tab-content">
         <div class="tab-pane active fade in" id="standings">
           <table id="results_table" class="table table-striped table-hover tablesorter ">
@@ -35,9 +58,6 @@
             </thead>
             <tbody>
               <?php
-                // get me one whole database please
-                require_once "database.php";
-                $db = getDBLink();
 
                 // get dem ppls. Ordered by number of solutions, tie breaker is age of last solution. Newbies should be below oldies.
                 $peoples = $db->query("SELECT u.*, COUNT(s.problemid) as count, MAX(s.datesolved) as lastacc,
@@ -66,6 +86,20 @@
             <p><a href="http://uhunt.felix-halim.net/">Go to UHunt</a></p>
           </div>
         </div>
+
+        <div class="tab-pane fade" id="adduser">
+          <div class="panel-body">
+            <form action="index.php" method="post" style="padding:1em">
+              <div class="input-group">
+                <input type="password" class="form-control" name="password" placeholder="Admin Password"><br />
+              <input type="text" class="form-control" name="username" placeholder="UVa Username"><br />
+              <input type="text" class="form-control" name="fullname" placeholder="Fullname (for display)"><br />
+              <input type="submit" name="submit">
+            </div>
+            </form>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -85,6 +119,10 @@
           $(this).tab('show')
         });
         $('#instructions a').click(function (e) {
+          e.preventDefault()
+          $(this).tab('show')
+        });
+        $('#adduser a').click(function (e) {
           e.preventDefault()
           $(this).tab('show')
         });
