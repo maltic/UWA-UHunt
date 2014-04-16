@@ -54,7 +54,7 @@
         <div class="tab-pane active fade in" id="standings">
           <table id="results_table" class="table table-striped table-hover tablesorter ">
             <thead>
-              <tr><th>Competitor</th><th>Solved This Week</th><th>Solved All Time</th><th>Last Solution</th></tr>
+              <tr><th>Competitor</th><th>Solved Past 7 Days</th><th>Solved All Time</th><th>Last Solution</th></tr>
             </thead>
             <tbody>
               <?php
